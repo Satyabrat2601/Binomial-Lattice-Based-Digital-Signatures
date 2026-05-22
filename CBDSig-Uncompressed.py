@@ -1,7 +1,7 @@
 import os
 import hashlib
 from typing import List, Tuple, Optional
-
+import math
 # ----------------------------
 # Parameters
 # ----------------------------
@@ -201,7 +201,7 @@ def shake256_squeeze(shake_ctx, length: int) -> bytes:
     return shake_ctx.digest(length)
 
 # ----------------------------
-# Expand A[i,j] via rejection sampling (q < 2^16)
+# Expand A[i,j] via rejection sampling ( < q)
 # ----------------------------
 def expand_a_element(rho: bytes, i: int, j: int) -> List[int]:
     """
@@ -639,3 +639,23 @@ c_prime = hash_to_ball(message, vec_to_bytes(Az_minus_qcj), 60)
 c_match = all(c[i] == c_prime[i] for i in range(N))
 print(f"Challenge comparison: c == c' ? {c_match}")
 print(f"  - Norm bound: {z_norm} < {300} = {z_norm < 300}")
+
+
+def estimate_signature_size_bytes(z):
+
+    max_coeff = vector_norm_infinity(z)
+
+    bits_per_coeff = math.ceil(math.log2(2 * max_coeff + 1))
+
+    total_coeffs = len(z) * N
+
+    total_bits = total_coeffs * bits_per_coeff
+
+    return {
+        "max_coeff": max_coeff,
+        "bits_per_coeff": bits_per_coeff,
+        "total_bits": total_bits,
+        "total_bytes": (total_bits + 7) // 8
+    }
+
+print(estimate_signature_size_bytes(z))
